@@ -1,0 +1,9 @@
+# file params.yaml
+
+general:
+  image_size : 227
+prepare:
+  excluded_classes:
+    - Crabs
+    - Corals
+    - Dolphin
