@@ -2,10 +2,11 @@
 
 prepare:
   excluded_classes:
-    - Crabs
-    - Corals
-    - Dolphin
+    - None
   image_size: 227
   test_split: 0.2
   val_split: 0.2
+train:
   data_aug_policy: 0
+  batch_size: 24
+  learning_rate: 0.001

@@ -5,6 +5,40 @@ stages:
     - data/raw/
     - src/data/filter_classes.py
     params:
-    - prepare.exclued_classed
+    - prepare.excluded_classes
     outs:
     - data/interim/filepath.csv
+    - data/processed/labels_map.yaml
+  get_mean_std:
+    cmd: python src/data/get_img_mean_std.py
+    deps:
+    - data/interim/filepath.csv
+    - src/data/get_img_mean_std.py
+    params:
+    - prepare.image_size
+    outs:
+    - data/processed/image_mean_std.yaml
+  split_dataset:
+    cmd: python src/data/split_dataset.py
+    deps:
+    - data/interim/filepath.csv
+    - src/data/split_dataset.py
+    params:
+    - prepare.test_split
+    - prepare.val_split
+    outs:
+    - data/processed/train.csv
+    - data/processed/val.csv
+    - data/processed/test.csv
+  train_model:
+    cmd: python src/models/train_model.py
+    deps:
+    - data/processed/train.csv
+    - data/processed/val.csv
+    - data/processed/test.csv
+    - data/processed/image_mean_std.yaml
+    - src/models/train_model.py
+    params:
+    - train.data_aug_policy
+    - train.batch_size
+    - train.learning_rate
