@@ -1,0 +1,10 @@
+stages:
+  filter_classes:
+    cmd: python src/data/filter_classes.py
+    deps:
+    - data/raw/
+    - src/data/filter_classes.py
+    params:
+    - prepare.exclued_classed
+    outs:
+    - data/interim/filepath.csv

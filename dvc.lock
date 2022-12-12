@@ -1,0 +1,85 @@
+schema: '2.0'
+stages:
+  filter_classes:
+    cmd: python src/data/filter_classes.py
+    deps:
+    - path: data/raw/
+      md5: 7193e3c79707fec0b257d8b86d08d415.dir
+      size: 288336418
+      nfiles: 11740
+    - path: src/data/filter_classes.py
+      md5: 7f80ac90b3a38336d22ef988cc5b4b8f
+      size: 1805
+    params:
+      params.yaml:
+        prepare.excluded_classes:
+        - None
+    outs:
+    - path: data/interim/filepath.csv
+      md5: 852d240d08ef0d5a1cebf690656e1d9c
+      size: 694261
+    - path: data/processed/labels_map.yaml
+      md5: 36eaa622a7d9f27d08b613608bf69fa5
+      size: 225
+  split_dataset:
+    cmd: python src/data/split_dataset.py
+    deps:
+    - path: data/interim/filepath.csv
+      md5: 852d240d08ef0d5a1cebf690656e1d9c
+      size: 694261
+    - path: src/data/split_dataset.py
+      md5: fd5c5165b62eda903619cead36643786
+      size: 1496
+    params:
+      params.yaml:
+        prepare.test_split: 0.2
+        prepare.val_split: 0.2
+    outs:
+    - path: data/processed/test.csv
+      md5: db543c86af5d5a39819f5ffeef257b2a
+      size: 138902
+    - path: data/processed/train.csv
+      md5: d60246a8df6be472370a13ea0982b318
+      size: 444164
+    - path: data/processed/val.csv
+      md5: b3cc7561eba69a1c023728703c5063e2
+      size: 111221
+  get_mean_std:
+    cmd: python src/data/get_img_mean_std.py
+    deps:
+    - path: data/interim/filepath.csv
+      md5: 852d240d08ef0d5a1cebf690656e1d9c
+      size: 694261
+    - path: src/data/get_img_mean_std.py
+      md5: 222dce76d1be4f63a9526008586b70bb
+      size: 1497
+    params:
+      params.yaml:
+        prepare.image_size: 227
+    outs:
+    - path: data/processed/image_mean_std.yaml
+      md5: fe14624dd253c18acac5ee984f8418d4
+      size: 140
+  train_model:
+    cmd: python src/models/train_model.py
+    deps:
+    - path: data/processed/image_mean_std.yaml
+      md5: fe14624dd253c18acac5ee984f8418d4
+      size: 140
+    - path: data/processed/test.csv
+      md5: db543c86af5d5a39819f5ffeef257b2a
+      size: 138902
+    - path: data/processed/train.csv
+      md5: d60246a8df6be472370a13ea0982b318
+      size: 444164
+    - path: data/processed/val.csv
+      md5: b3cc7561eba69a1c023728703c5063e2
+      size: 111221
+    - path: src/models/train_model.py
+      md5: 5660eb37c75bc7a7966afc1e662e2935
+      size: 6063
+    params:
+      params.yaml:
+        train.batch_size: 24
+        train.data_aug_policy: 0
+        train.learning_rate: 0.001
