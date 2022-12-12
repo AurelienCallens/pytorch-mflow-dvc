@@ -1,8 +1,15 @@
+import yaml
 import torch
 import torchvision.transforms as T
-from src.data.CustomImageDataset import CustomImageDataset
 
 
+import sys
+sys.path.append('src/')
+from data.CustomImageDataset import CustomImageDataset
+from utils.mlflow_run_decorator import mlflow_run
+
+
+@mlflow_run
 def get_mean_and_std(loader):
     mean = 0. 
     std = 0. 
@@ -23,7 +30,7 @@ def get_mean_and_std(loader):
 if __name__ == '__main__':
     # Read params
     params = yaml.safe_load(open('./params.yaml'))
-    image_size = params['general']['image_size']
+    image_size = params['prepare']['image_size']
 
     transformf = T.Compose(
         [T.ToPILImage(),

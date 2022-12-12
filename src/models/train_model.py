@@ -9,11 +9,12 @@ import torchvision.transforms as T
 from torch.utils.data import DataLoader
 from torchmetrics.functional import accuracy
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+import mlflow 
 
-import os 
-os.chdir('/home/aurelien/Desktop/pytorch-sea-animals/')
-from src.data.CustomImageDataset import CustomImageDataset
-
+import sys
+sys.path.append('src/')
+from data.CustomImageDataset import CustomImageDataset
+from utils.mlflow_run_decorator import mlflow_run
 
 
 
@@ -139,34 +140,44 @@ class mobilenetv3_fe(pl.LightningModule):
         out = nn.Softmax(-1)(out) 
         return torch.argmax(out,dim=1)
 
+@mlflow_run
+def train_model():
+
+    mlflow.pytorch.autolog()
+    mlflow.log_param("num_classes", num_classes)
+    mlflow.log_param("batch_size", BATCH_SIZE)
+    
+    model = mobilenetv3_fe(learning_rate=LR, n_classes=num_classes)
+    dx = LightDataset(batch_size=BATCH_SIZE)
+
+    # Callbacks
+    early_stop_callback = EarlyStopping(monitor="val_acc",
+    min_delta=0.00, patience=3, verbose=False, mode="max")
+
+    # Initialize a trainer
+    trainer = pl.Trainer(accelerator='gpu', devices=-1,
+    max_epochs=30, callbacks=[early_stop_callback])
+
+    trainer.fit(model, dx)
+    trainer.test(model, dx)
+
+
 if __name__ == '__main__':
     # Parameters
     # Data aug
     params = yaml.safe_load(open('./params.yaml'))
     image_size = (params['prepare']['image_size'], params['prepare']['image_size'])
     policies = [T.AutoAugmentPolicy.CIFAR10, T.AutoAugmentPolicy.IMAGENET, T.AutoAugmentPolicy.SVHN]
-    data_aug_policy = policies[params['prepare']['data_aug_policy']]
+    data_aug_policy = policies[params['train']['data_aug_policy']]
+
+
+    BATCH_SIZE = params['train']['batch_size']
+    LR = params['train']['learning_rate']
+    label_map = yaml.safe_load(open('./data/processed/labels_map.yaml'))
+    num_classes = len(label_map)
 
     # Image standardization
     mean_std = yaml.safe_load(open('./data/processed/image_mean_std.yaml'))
 
 
-    # Callbacks
-
-    early_stop_callback = EarlyStopping(monitor="val_acc",
-    min_delta=0.00, patience=3, verbose=False, mode="max")
-
-
-    # Initialize a trainer
-    trainer = pl.Trainer(accelerator='gpu', devices=-1,
-    max_epochs=2, callbacks=[early_stop_callback])
-
-    BATCH_SIZE = 6
-    LR = 0.001
-    label_map = yaml.safe_load(open('./data/processed/labels_map.yaml'))
-    num_classes = len(label_map)
-    model = mobilenetv3_fe(learning_rate=LR, n_classes=num_classes)
-    dx = LightDataset(batch_size=BATCH_SIZE)
-
-    trainer.fit(model, dx)
-    trainer.test(model, dx)
+    train_model()

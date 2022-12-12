@@ -2,7 +2,14 @@ import os
 import glob
 import yaml
 import pandas as pd
+import mlflow 
+import sys
+sys.path.append('src/')
 
+from utils.mlflow_run_decorator import mlflow_run
+
+
+@mlflow_run
 def make_csv_path(excluded_labels=None):
 
     # List all the images in raw/ 
@@ -25,6 +32,7 @@ def make_csv_path(excluded_labels=None):
             nclasses=len(df['label'].unique())
         ))
     
+    mlflow.log_param("excluded_classes", excluded_labels)
     # Converting classes to number 
     labels = df['label'].unique()
     labels.sort()
@@ -39,7 +47,7 @@ def make_csv_path(excluded_labels=None):
     df.to_csv('./data/interim/filepath.csv', index=False)
 
 if __name__ == '__main__':
-
+    
     # Read params
     params = yaml.safe_load(open('./params.yaml'))['prepare']
     excluded_classes = params['excluded_classes']
