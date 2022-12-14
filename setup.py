@@ -4,7 +4,7 @@ setup(
     name='src',
     packages=find_packages(),
     version='0.1.0',
-    description='Classification of sea animals' images with pytorch',
+    description='Including MLOps in pytorch project: Classification of sea animals images with pytorch',
     author='AurelienCallens',
     license='MIT',
 )
