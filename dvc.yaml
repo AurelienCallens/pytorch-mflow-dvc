@@ -1,8 +1,4 @@
 stages:
-  check_images:
-    cmd: python src/data/check_data.py
-    deps: 
-    - src/data/check_data.py
   filter_classes:
     cmd: python src/data/filter_classes.py
     deps:

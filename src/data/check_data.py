@@ -2,7 +2,6 @@ import os
 import glob
 from torchvision.io import read_image
 
-@mlflow_run
 def verify_channel_number(data_repo):
     list_images = glob.glob(data_repo, recursive=True)
 
